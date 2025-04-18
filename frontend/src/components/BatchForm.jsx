@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const BatchForm = () => {
   const [productName, setProductName] = useState('');
   const [origin, setOrigin] = useState('');
-  const [harvestDate, setHarvestDate] = useState('');
+  const [harvestDate, setHarvestDate] = useState(new Date());
   const [batchId, setBatchId] = useState(null);
   const [error, setError] = useState(null);
 
@@ -18,7 +20,7 @@ const BatchForm = () => {
         body: JSON.stringify({
           productName,
           origin,
-          harvestDate,
+          harvestDate: harvestDate.toISOString().split('T')[0],
         }),
       });
       if (!response.ok) {
@@ -55,10 +57,10 @@ const BatchForm = () => {
         </div>
         <div>
           <label>Harvest Date:</label>
-          <input
-            type="date"
-            value={harvestDate}
-            onChange={(e) => setHarvestDate(e.target.value)}
+          <DatePicker
+            selected={harvestDate}
+            onChange={(date) => setHarvestDate(date)}
+            dateFormat="yyyy-MM-dd"
             required
           />
         </div>
