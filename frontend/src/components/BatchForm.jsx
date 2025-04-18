@@ -37,7 +37,7 @@ const BatchForm = () => {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Create a New Product Batch</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="flex flex-col">
           <label className="block text-sm font-medium text-gray-700">Product Name:</label>
           <input
             type="text"
@@ -47,7 +47,7 @@ const BatchForm = () => {
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
-        <div>
+        <div className="flex flex-col">
           <label className="block text-sm font-medium text-gray-700">Origin:</label>
           <input
             type="text"
@@ -57,7 +57,7 @@ const BatchForm = () => {
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
-        <div>
+        <div className="flex flex-col">
           <label className="block text-sm font-medium text-gray-700">Harvest Date:</label>
           <DatePicker
             selected={harvestDate}
