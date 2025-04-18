@@ -34,40 +34,48 @@ const BatchForm = () => {
   };
 
   return (
-    <div>
-      <h2>Create a New Product Batch</h2>
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4">Create a New Product Batch</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label>Product Name:</label>
+          <label className="block text-sm font-medium text-gray-700">Product Name:</label>
           <input
             type="text"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
         <div>
-          <label>Origin:</label>
+          <label className="block text-sm font-medium text-gray-700">Origin:</label>
           <input
             type="text"
             value={origin}
             onChange={(e) => setOrigin(e.target.value)}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
         <div>
-          <label>Harvest Date:</label>
+          <label className="block text-sm font-medium text-gray-700">Harvest Date:</label>
           <DatePicker
             selected={harvestDate}
             onChange={(date) => setHarvestDate(date)}
             dateFormat="yyyy-MM-dd"
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
         </div>
-        <button type="submit">Create Batch</button>
+        <button
+          type="submit"
+          className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Create Batch
+        </button>
       </form>
-      {batchId && <p>Batch created successfully! Batch ID: {batchId}</p>}
-      {error && <p>Error: {error}</p>}
+      {batchId && <p className="mt-4 text-green-600">Batch created successfully! Batch ID: {batchId}</p>}
+      {error && <p className="mt-4 text-red-600">Error: {error}</p>}
     </div>
   );
 };
