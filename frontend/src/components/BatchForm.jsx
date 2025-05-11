@@ -34,48 +34,73 @@ const BatchForm = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Create a New Product Batch</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700">Product Name:</label>
-          <input
-            type="text"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700">Origin:</label>
-          <input
-            type="text"
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="block text-sm font-medium text-gray-700">Harvest Date:</label>
-          <DatePicker
-            selected={harvestDate}
-            onChange={(date) => setHarvestDate(date)}
-            dateFormat="yyyy-MM-dd"
-            required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+    <div className="bg-white rounded-xl shadow-lg p-8 border border-green-100">
+      <h2 className="text-2xl font-semibold mb-6 text-green-800 text-center">
+        Create a New Product Batch
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-4">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Product Name
+            </label>
+            <input
+              type="text"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              required
+              className="form-input px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+              placeholder="Enter product name"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Origin
+            </label>
+            <input
+              type="text"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+              required
+              className="form-input px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+              placeholder="Enter origin location"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700 mb-1">
+              Harvest Date
+            </label>
+            <DatePicker
+              selected={harvestDate}
+              onChange={(date) => setHarvestDate(date)}
+              dateFormat="yyyy-MM-dd"
+              required
+              className="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+            />
+          </div>
         </div>
         <button
           type="submit"
-          className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors font-medium"
         >
           Create Batch
         </button>
       </form>
-      {batchId && <p className="mt-4 text-green-600">Batch created successfully! Batch ID: {batchId}</p>}
-      {error && <p className="mt-4 text-red-600">Error: {error}</p>}
+      {batchId && (
+        <div className="mt-6 p-4 bg-green-50 rounded-lg">
+          <p className="text-green-800 font-medium">
+            Batch created successfully! 
+            <span className="block mt-1 text-sm">
+              Batch ID: {batchId}
+            </span>
+          </p>
+        </div>
+      )}
+      {error && (
+        <div className="mt-6 p-4 bg-red-50 rounded-lg">
+          <p className="text-red-800">Error: {error}</p>
+        </div>
+      )}
     </div>
   );
 };
