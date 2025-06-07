@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List # Keep for future use if listing events
 from uuid import UUID # For type hinting batch_id if needed explicitly
 
-from ..models.batch import BatchEvent as PydanticBatchEvent # Use Pydantic model
-from ..models.database import Event as SQLAlchemyEvent, Batch as SQLAlchemyBatch # SQLAlchemy models
-from ..db import get_db
-# from ..utils import validate_uuid, format_event # No longer needed if returning Pydantic model directly
+from models.batch import BatchEvent as PydanticBatchEvent, BatchEventCreate # Use Pydantic models
+from models.database import Event as SQLAlchemyEvent, Batch as SQLAlchemyBatch # SQLAlchemy models
+from db import get_db
+# from utils import validate_uuid, format_event # No longer needed if returning Pydantic model directly
 
 router = APIRouter()
 
 @router.post("/event", response_model=PydanticBatchEvent) # Use Pydantic model for response
-async def create_event(event_input: PydanticBatchEvent, db: Session = Depends(get_db)):
+async def create_event(event_input: BatchEventCreate, db: Session = Depends(get_db)):
     """Create a new event for a batch."""
     try:
         # 1. Validate that the batch_id exists
@@ -45,4 +45,29 @@ async def create_event(event_input: PydanticBatchEvent, db: Session = Depends(ge
     except Exception as e:
         db.rollback() # Rollback in case of other errors
         # Consider logging the exception e
-        raise HTTPException(status_code=500, detail=f"Failed to create event: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Failed to create event: {str(e)}")
+
+@router.get("/batch/{batch_id}/events", response_model=List[PydanticBatchEvent])
+async def get_batch_events(batch_id: str, db: Session = Depends(get_db)):
+    """Get all events for a specific batch."""
+    from utils import validate_uuid
+    
+    # Validate the batch_id format first
+    validated_uuid = validate_uuid(batch_id)
+    if not validated_uuid:
+        raise HTTPException(status_code=400, detail=f"Invalid batch ID format: '{batch_id}'")
+    
+    try:
+        # Check if batch exists
+        batch = db.query(SQLAlchemyBatch).filter(SQLAlchemyBatch.id == validated_uuid).first()
+        if not batch:
+            raise HTTPException(status_code=404, detail=f"Batch with id '{validated_uuid}' not found")
+        
+        # Get events for the batch
+        events = db.query(SQLAlchemyEvent).filter(SQLAlchemyEvent.batch_id == validated_uuid).all()
+        return events
+        
+    except HTTPException as http_exc:
+        raise http_exc
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve events: {str(e)}") 

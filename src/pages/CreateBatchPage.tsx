@@ -1,5 +1,5 @@
 import React from 'react';
-import BatchForm from '../components/BatchForm'; // Path will be correct once BatchForm is in src/components
+import BatchForm from '../components/BatchForm.tsx'; // Explicitly import the TypeScript version
 
 const CreateBatchPage: React.FC = () => {
   return (

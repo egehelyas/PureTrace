@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import batch, event
-from .db import engine, Base
+from routes import batch, event
+from db import engine, Base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)

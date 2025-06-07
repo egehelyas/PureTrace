@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 
 // Define a type for lifecycle events
 interface LifecycleEvent {
@@ -43,14 +43,29 @@ const TracePage: React.FC = () => {
         // await new Promise(resolve => setTimeout(resolve, 1000));
 
         // In a real app, fetch from your API endpoint:
-        const response = await fetch(`/api/batch/${batchId}`);
+        const response = await fetch(`http://127.0.0.1:8000/batch/${batchId}`);
         if (!response.ok) {
           // If the API returns a specific error message, use it
-          // const errorData = await response.json().catch(() => null);
-          // throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorData = await response.json().catch(() => null);
+          throw new Error(errorData?.detail || `HTTP error! status: ${response.status}`);
         }
-        const data: BatchData = await response.json();
+        const apiData = await response.json();
+        
+        // Transform the API response to match our frontend interface
+        const data: BatchData = {
+          id: apiData.id,
+          productName: apiData.product_name,
+          origin: apiData.origin,
+          harvestDate: apiData.harvest_date,
+          lifecycleEvents: apiData.events?.map((event: any) => ({
+            id: event.id,
+            eventName: event.event_type,
+            timestamp: event.timestamp,
+            location: event.location,
+            notes: event.description,
+            isBlockchainVerified: false // Default for now
+          })) || []
+        };
         setBatchData(data);
       } catch (e: any) {
         setError(e.message || "An unknown error occurred");
@@ -61,18 +76,6 @@ const TracePage: React.FC = () => {
 
     fetchData();
   }, [batchId]);
-
-  if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center', fontSize: '1.2em' }}>Loading batch data...</div>;
-  }
-
-  if (error) {
-    return <div style={{ padding: '20px', color: 'red', textAlign: 'center', fontSize: '1.2em' }}>Error fetching data: {error}</div>;
-  }
-
-  if (!batchData) {
-    return <div style={{ padding: '20px', textAlign: 'center', fontSize: '1.2em' }}>No data found for batch ID: {batchId}</div>;
-  }
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
@@ -96,132 +99,131 @@ const TracePage: React.FC = () => {
       return dateTimeString;
     }
   };
-  
-  // Styles (can be moved to a CSS file for larger applications)
-  const styles = {
-    pageContainer: { fontFamily: 'Arial, sans-serif', maxWidth: '900px', margin: '0 auto', padding: '20px' },
-    headerSection: { padding: '20px', backgroundColor: '#fff', borderRadius: '8px', marginBottom: '30px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-    mainTitle: { fontSize: '1.8em', fontWeight: 'bold', color: '#222', margin: '0 0 5px 0' },
-    subtitle: { fontSize: '1em', color: '#666', margin: '0 0 20px 0' }, 
-    productName: { fontSize: '2em', fontWeight: 'bold', color: '#333', marginBottom: '5px' },
-    productOrigin: { fontSize: '1.2em', color: '#555', marginBottom: '20px' },
-    detailGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' },
-    detailItem: { fontSize: '1em' },
-    detailLabel: { fontWeight: 'bold', color: '#444' }, 
-    timelineSection: { padding: '20px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-    timelineTitle: { fontSize: '1.8em', fontWeight: 'bold', color: '#222', marginBottom: '25px' },
-    timelineList: { listStyle: 'none', padding: 0, position: 'relative' as 'relative' }, // Added as 'relative' for TS
-    timelineItem: {
-      paddingLeft: '40px', 
-      position: 'relative' as 'relative', 
-      paddingBottom: '25px', 
-      borderLeft: '2px solid #e0e0e0',
-      marginLeft: '15px' // to align with the circle
-    },
-    timelineDot: {
-      width: '30px',
-      height: '30px',
-      borderRadius: '50%',
-      backgroundColor: '#60a5fa', // Example color, can be dynamic
-      position: 'absolute' as 'absolute',
-      left: '-16px', // (30px + 2px border) / 2
-      top: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'white',
-      fontWeight: 'bold',
-      fontSize: '0.9em'
-    },
-    eventContent: { marginLeft: '10px' }, // To give some space after the dot/line
-    eventName: { fontSize: '1.2em', fontWeight: 'bold', color: '#333', marginBottom: '3px' },
-    eventTime: { fontSize: '0.9em', color: '#555', backgroundColor: '#f0f0f0', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginLeft: '8px' },
-    eventDetails: { fontSize: '1em', color: '#666', margin: '5px 0' },
-    blockchainStatus: { marginTop: '10px', display: 'flex', alignItems: 'center', fontSize: '0.9em', color: '#28a745' },
-    blockchainIcon: { marginRight: '5px', color: '#28a745' }, // Placeholder for an icon
-    transactionLink: { marginLeft: '15px', color: '#007bff', textDecoration: 'none' }
-  };
 
-  // Get first letter for the timeline dot
-  const getInitial = (name?: string) => name ? name.charAt(0).toUpperCase() : '';
+  if (loading) {
+    return <div className="p-5 text-center text-lg">Loading batch data...</div>;
+  }
+
+  if (error) {
+    return <div className="p-5 text-red-600 text-center text-lg">Error fetching data: {error}</div>;
+  }
+
+  if (!batchData) {
+    return <div className="p-5 text-center text-lg">No data found for batch ID: {batchId}</div>;
+  }
 
   return (
-    <div style={styles.pageContainer}>
-      <section style={styles.headerSection}>
-        <h1 style={styles.mainTitle}>Product Journey</h1>
-        <p style={styles.subtitle}>Trace the journey of this product from origin to you</p>
-        <h2 style={styles.productName}>{batchData.productName}</h2>
-        {batchData.origin && <p style={styles.productOrigin}>{batchData.origin}</p>}
+    <div className="font-sans max-w-4xl mx-auto p-5 bg-gray-50 min-h-screen">
+      {/* Header Section */}
+      <section className="p-6 bg-white rounded-xl shadow-lg mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-1">Product Journey</h1>
+        <p className="text-md text-gray-600 mb-6">Trace the journey of this product from origin to you.</p>
         
-        <div style={styles.detailGrid}>
+        <h2 className="text-4xl font-bold text-green-700 mb-2">{batchData.productName}</h2>
+        {batchData.origin && <p className="text-xl text-gray-700 mb-6">{batchData.origin}</p>}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6 text-sm">
             <div>
-                <span style={styles.detailLabel}>Batch ID: </span> 
-                <span style={styles.detailItem}>{batchData.id}</span>
+                <span className="font-semibold text-gray-700">Batch ID: </span> 
+                <span className="text-gray-600">{batchData.id}</span>
             </div>
             <div>
-                <span style={styles.detailLabel}>Harvest Date: </span>
-                <span style={styles.detailItem}>{formatDate(batchData.harvestDate)}</span>
+                <span className="font-semibold text-gray-700">Harvest Date: </span>
+                <span className="text-gray-600">{formatDate(batchData.harvestDate)}</span>
             </div>
             {batchData.processingDate && (
                  <div>
-                    <span style={styles.detailLabel}>Processing Date: </span>
-                    <span style={styles.detailItem}>{formatDate(batchData.processingDate)}</span>
+                    <span className="font-semibold text-gray-700">Processing Date: </span>
+                    <span className="text-gray-600">{formatDate(batchData.processingDate)}</span>
                 </div>
             )}
             {batchData.packagingDate && (
                  <div>
-                    <span style={styles.detailLabel}>Packaging Date: </span>
-                    <span style={styles.detailItem}>{formatDate(batchData.packagingDate)}</span>
+                    <span className="font-semibold text-gray-700">Packaging Date: </span>
+                    <span className="text-gray-600">{formatDate(batchData.packagingDate)}</span>
                 </div>
             )}
              {batchData.bestBeforeDate && (
                  <div>
-                    <span style={styles.detailLabel}>Best Before: </span>
-                    <span style={styles.detailItem}>{formatDate(batchData.bestBeforeDate)}</span>
+                    <span className="font-semibold text-gray-700">Best Before: </span>
+                    <span className="text-gray-600">{formatDate(batchData.bestBeforeDate)}</span>
                 </div>
             )}
         </div>
-        {batchData.description && <p style={{color: '#666', lineHeight: '1.6'}}>{batchData.description}</p>}
+        {batchData.description && <p className="text-gray-600 leading-relaxed mb-6">{batchData.description}</p>}
          {batchData.imageUrl && (
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <div className="mt-6 text-center">
             <img 
                 src={batchData.imageUrl} 
                 alt={batchData.productName} 
-                style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
+                className="max-w-full max-h-80 rounded-lg shadow-md inline-block"
             />
             </div>
         )}
       </section>
 
-      <section style={styles.timelineSection}>
-        <h2 style={styles.timelineTitle}>Timeline</h2>
+      {/* Timeline Section */}
+      <section className="p-6 bg-white rounded-xl shadow-lg">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800">Timeline</h2>
+          <Link
+            to={`/add-event?batch=${batchData.id}`}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+          >
+            📋 Add Event
+          </Link>
+        </div>
         {batchData.lifecycleEvents && batchData.lifecycleEvents.length > 0 ? (
-          <ul style={styles.timelineList}>
-            {batchData.lifecycleEvents.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((event, index, arr) => (
-              <li key={event.id} style={{...styles.timelineItem, ...(index === arr.length - 1 ? { borderLeft: '2px solid transparent' } : {})}}>
-                <div style={{...styles.timelineDot, backgroundColor: event.isBlockchainVerified ? '#28a745' : '#60a5fa' }}>{getInitial(event.eventName)}</div>
-                <div style={styles.eventContent}>
-                  <span style={styles.eventName}>{event.eventName}</span>
-                  <span style={styles.eventTime}>{formatDateTime(event.timestamp)}</span>
-                  {event.notes && <p style={styles.eventDetails}>{event.notes}</p>}
-                  {event.location && <p style={styles.eventDetails}>Location: {event.location}</p>}
+          <div className="relative">
+            {/* The vertical line */}
+            <div className="hidden sm:block absolute w-0.5 h-full bg-gray-300 left-5 top-2 transform -translate-x-1/2"></div>
+
+            {batchData.lifecycleEvents
+              .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+              .map((event, index, arr) => (
+              <div key={event.id} className="relative pl-12 pb-8 last:pb-0">
+                 {/* Timeline Dot - larger and with conditional color */}
+                <div 
+                  className={`absolute left-0 top-1 w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm transform -translate-x-1/2 shadow-md ${event.isBlockchainVerified ? 'bg-green-500' : 'bg-blue-500'}`}
+                >
+                  {event.eventName.charAt(0).toUpperCase()}
+                </div>
+                
+                {/* Event Content Card */}
+                <div className="ml-2 p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
+                    <h3 className="text-lg font-semibold text-gray-800">{event.eventName}</h3>
+                    <p className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full mt-1 sm:mt-0">
+                      {formatDateTime(event.timestamp)}
+                    </p>
+                  </div>
+                  {event.location && <p className="text-sm text-gray-600 mb-1">Location: {event.location}</p>}
+                  {event.notes && <p className="text-sm text-gray-600 mb-2">{event.notes}</p>}
+                  
                   {event.isBlockchainVerified && (
-                    <div style={styles.blockchainStatus}>
-                      <span style={styles.blockchainIcon}>✓</span> {/* Simple check icon */}
-                      Blockchain Verified
-                      {event.transactionUrl && (
-                        <a href={event.transactionUrl} target="_blank" rel="noopener noreferrer" style={styles.transactionLink}>
-                          View Transaction ↗
-                        </a>
-                      )}
+                    <div className="mt-2 pt-2 border-t border-gray-200">
+                      <div className="flex items-center text-sm text-green-600">
+                        <svg className="w-4 h-4 mr-1.5 fill-current" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"></path></svg>
+                        Blockchain Verified
+                        {event.transactionUrl && (
+                          <a 
+                            href={event.transactionUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="ml-auto text-xs text-blue-600 hover:text-blue-700 hover:underline font-medium"
+                          >
+                            View Transaction &rarr;
+                          </a>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p style={{ color: '#666' }}>No lifecycle events recorded for this batch.</p>
+          <p className="text-gray-600">No lifecycle events recorded for this batch.</p>
         )}
       </section>
     </div>

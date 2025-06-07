@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Date, ForeignKey, UUID, DateTime
+from sqlalchemy import Column, String, Date, ForeignKey, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from db import Base
@@ -7,7 +7,7 @@ import uuid
 class Batch(Base):
     __tablename__ = "batches"
 
-    id = Column(UUID, primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     product_name = Column(String, nullable=False)
     origin = Column(String, nullable=False)
     harvest_date = Column(Date, nullable=False)
@@ -17,8 +17,8 @@ class Batch(Base):
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(UUID, primary_key=True, default=uuid.uuid4)
-    batch_id = Column(UUID, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    batch_id = Column(String, ForeignKey("batches.id", ondelete="CASCADE"), nullable=False)
     event_type = Column(String, nullable=False)
     description = Column(String, nullable=False)
     timestamp = Column(Date, nullable=False)

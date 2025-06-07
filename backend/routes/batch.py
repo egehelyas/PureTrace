@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from uuid import uuid4
 
-from ..models.batch import BatchCreate, Batch as PydanticBatch, BatchCreationResponse
-from ..models.database import Batch as SQLAlchemyBatch
-from ..db import get_db
-from ..utils import validate_uuid
+from models.batch import BatchCreate, Batch as PydanticBatch, BatchCreationResponse
+from models.database import Batch as SQLAlchemyBatch
+from db import get_db
+from utils import validate_uuid
 
 router = APIRouter()
 
@@ -45,15 +45,15 @@ async def create_batch(batch_input: BatchCreate, request: Request, db: Session =
 
 @router.get("/batch/{batch_id}", response_model=PydanticBatch)
 async def get_batch(batch_id: str, db: Session = Depends(get_db)):
-    """Get a batch by ID."""
+    """Get a batch by ID with all its events."""
     # Validate the batch_id format first
     validated_uuid = validate_uuid(batch_id)
     if not validated_uuid:
         raise HTTPException(status_code=400, detail=f"Invalid batch ID format: '{batch_id}'")
     
     try:
-        # Query using the validated UUID
-        db_batch = db.query(SQLAlchemyBatch).filter(SQLAlchemyBatch.id == validated_uuid).first()
+        # Query using the validated UUID and eager load events
+        db_batch = db.query(SQLAlchemyBatch).options(joinedload(SQLAlchemyBatch.events)).filter(SQLAlchemyBatch.id == validated_uuid).first()
         if db_batch is None:
             raise HTTPException(status_code=404, detail=f"Batch with id '{validated_uuid}' not found")
         return db_batch
